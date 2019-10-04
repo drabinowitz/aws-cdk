@@ -306,6 +306,14 @@ export interface DatabaseInstanceNewProps {
   readonly vpcPlacement?: ec2.SubnetSelection;
 
   /**
+   * Prefer using vpcPlacement for new projects. A custom cfn subnet for
+   * backwards compatibility with an existing RDS db.
+   *
+   * @default - fallback to vpcPlacement
+   */
+  readonly cfnDBSubnetGroup?: CfnDBSubnetGroup;
+
+  /**
    * The port for the instance.
    *
    * @default - the default port for the chosen engine.
@@ -488,7 +496,7 @@ abstract class DatabaseInstanceNew extends DatabaseInstanceBase implements IData
 
     const { subnetIds } = props.vpc.selectSubnets(props.vpcPlacement);
 
-    const subnetGroup = new CfnDBSubnetGroup(this, 'SubnetGroup', {
+    const subnetGroup = props.cfnDBSubnetGroup || new CfnDBSubnetGroup(this, 'SubnetGroup', {
       dbSubnetGroupDescription: `Subnet group for ${this.node.id} database`,
       subnetIds
     });
